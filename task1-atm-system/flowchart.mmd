@@ -1,0 +1,62 @@
+flowchart TB
+
+Start([START])
+Welcome[/Welcome to the ATM/]
+InsertCard[/Insert card and read input/]
+
+InitPIN[Set pinAttempts = 0\nSet pinVerified = FALSE]
+EnterPIN[/Enter PIN/]
+PinCorrect{PIN correct?}
+SetVerified[Set pinVerified = TRUE]
+IncAttempts[Increase pinAttempts\nPrint Incorrect PIN]
+AttemptsLeft{pinAttempts < 3?}
+PinVerifiedCheck{pinVerified is TRUE?}
+BlockCard[Card blocked\nEnd session]
+End([END])
+
+QueryInfo[Query balance\nQuery todayWithdrawn\nQuery dailyLimit]
+ShowBalance[/Show current balance/]
+InitWithdraw[Set withdrawalCompleted = FALSE]
+
+EnterAmount[/Enter withdrawal amount/]
+CancelCheck{Is amount equal to 0?}
+Cancel[Withdrawal cancelled\nSet withdrawalCompleted = TRUE]
+
+Multiple20{Is amount multiple of 20?}
+Invalid20[/Amount must be multiple of 20/]
+
+Sufficient{Is amount <= balance?}
+Insufficient[/Insufficient balance/]
+
+DailyLimitOk{Within daily limit?}
+LimitExceeded[/Daily limit exceeded/]
+
+Dispense[Dispense cash\nPrint receipt\nUpdate balance]
+Success[/Take cash\nTransaction successful/]
+
+Another[/Another transaction YES or NO/]
+AgainYes{Is answer YES?}
+Goodbye[/Thank you Goodbye/]
+
+Start --> Welcome --> InsertCard --> InitPIN --> EnterPIN --> PinCorrect
+
+PinCorrect -- Yes --> SetVerified --> PinVerifiedCheck
+PinCorrect -- No --> IncAttempts --> AttemptsLeft
+AttemptsLeft -- Yes --> EnterPIN
+AttemptsLeft -- No --> PinVerifiedCheck
+
+PinVerifiedCheck -- No --> BlockCard --> End
+PinVerifiedCheck -- Yes --> QueryInfo --> ShowBalance --> InitWithdraw --> EnterAmount --> CancelCheck
+
+CancelCheck -- Yes --> Cancel --> Another
+CancelCheck -- No --> Multiple20
+Multiple20 -- No --> Invalid20 --> EnterAmount
+Multiple20 -- Yes --> Sufficient
+Sufficient -- No --> Insufficient --> EnterAmount
+Sufficient -- Yes --> DailyLimitOk
+DailyLimitOk -- No --> LimitExceeded --> EnterAmount
+DailyLimitOk -- Yes --> Dispense --> Success --> Another
+
+Another --> AgainYes
+AgainYes -- Yes --> InsertCard
+AgainYes -- No --> Goodbye --> End
