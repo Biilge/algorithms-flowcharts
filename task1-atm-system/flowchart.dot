@@ -1,0 +1,93 @@
+digraph ATM_Withdrawal {
+  rankdir=TB;
+  fontsize=12;
+  labelloc="t";
+  label="ATM Cash Withdrawal System - Flowchart";
+
+  node [fontsize=11];
+  edge [fontsize=10];
+
+  // Shapes:
+  // Start/End: oval
+  // Input/Output: parallelogram
+  // Process: box
+  // Decision: diamond
+
+  Start [shape=oval, label="START"];
+  Welcome [shape=parallelogram, label="PRINT: Welcome to the ATM"];
+  InsertCard [shape=parallelogram, label="PRINT: Insert your card\nREAD: cardInserted"];
+  InitPIN [shape=box, label="SET pinAttempts=0\nSET pinVerified=FALSE"];
+  EnterPIN [shape=parallelogram, label="PRINT: Enter PIN\nREAD: enteredPIN"];
+  PinCorrect [shape=diamond, label="enteredPIN == storedPIN?"];
+  SetVerified [shape=box, label="SET pinVerified=TRUE"];
+  IncAttempts [shape=box, label="SET pinAttempts = pinAttempts + 1\nPRINT: Incorrect PIN"];
+  AttemptsLeft [shape=diamond, label="pinAttempts < 3?"];
+  PinVerifiedCheck [shape=diamond, label="pinVerified == TRUE?"];
+  BlockCard [shape=box, label="PRINT: Card blocked\n(3 incorrect PIN)\nEND SESSION"];
+  End [shape=oval, label="END"];
+
+  QueryInfo [shape=box, label="QUERY balance\nQUERY todayWithdrawn\nQUERY dailyLimit"];
+  ShowBalance [shape=parallelogram, label="PRINT: Show current balance"];
+  InitWithdraw [shape=box, label="SET withdrawalCompleted=FALSE"];
+
+  EnterAmount [shape=parallelogram, label="PRINT: Enter amount (0=cancel)\nREAD: amount"];
+  CancelCheck [shape=diamond, label="amount == 0?"];
+  Cancel [shape=box, label="PRINT: Withdrawal cancelled\nSET withdrawalCompleted=TRUE"];
+
+  Multiple20 [shape=diamond, label="amount MOD 20 == 0?"];
+  Invalid20 [shape=parallelogram, label="PRINT: Must be multiple of 20 TL"];
+
+  Sufficient [shape=diamond, label="amount <= balance?"];
+  Insufficient [shape=parallelogram, label="PRINT: Insufficient balance"];
+
+  DailyLimitOk [shape=diamond, label="todayWithdrawn + amount <= dailyLimit?"];
+  LimitExceeded [shape=parallelogram, label="PRINT: Daily limit exceeded\nPRINT: Remaining limit"];
+
+  Dispense [shape=box, label="DISPENSE_CASH(amount)\nPRINT_RECEIPT(amount, balance-amount)\nUPDATE balance, todayWithdrawn"];
+  Success [shape=parallelogram, label="PRINT: Take your cash\nPRINT: Transaction successful\nSET withdrawalCompleted=TRUE"];
+
+  Another [shape=parallelogram, label="PRINT: Another transaction? (YES/NO)\nREAD: again"];
+  AgainYes [shape=diamond, label="again == YES?"];
+  Goodbye [shape=parallelogram, label="PRINT: Thank you / Goodbye"];
+
+  // Flow
+  Start -> Welcome -> InsertCard -> InitPIN -> EnterPIN -> PinCorrect;
+
+  PinCorrect -> SetVerified [label="Yes"];
+  SetVerified -> PinVerifiedCheck;
+
+  PinCorrect -> IncAttempts [label="No"];
+  IncAttempts -> AttemptsLeft;
+
+  AttemptsLeft -> EnterPIN [label="Yes"];
+  AttemptsLeft -> PinVerifiedCheck [label="No"];
+
+  PinVerifiedCheck -> QueryInfo [label="Yes"];
+  PinVerifiedCheck -> BlockCard [label="No"];
+  BlockCard -> End;
+
+  QueryInfo -> ShowBalance -> InitWithdraw -> EnterAmount -> CancelCheck;
+
+  CancelCheck -> Cancel [label="Yes"];
+  Cancel -> Another;
+
+  CancelCheck -> Multiple20 [label="No"];
+  Multiple20 -> Invalid20 [label="No"];
+  Invalid20 -> EnterAmount;
+
+  Multiple20 -> Sufficient [label="Yes"];
+  Sufficient -> Insufficient [label="No"];
+  Insufficient -> EnterAmount;
+
+  Sufficient -> DailyLimitOk [label="Yes"];
+  DailyLimitOk -> LimitExceeded [label="No"];
+  LimitExceeded -> EnterAmount;
+
+  DailyLimitOk -> Dispense [label="Yes"];
+  Dispense -> Success -> Another;
+
+  Another -> AgainYes;
+  AgainYes -> InsertCard [label="Yes"];
+  AgainYes -> Goodbye [label="No"];
+  Goodbye -> End;
+}
