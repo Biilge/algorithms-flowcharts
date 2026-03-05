@@ -1,0 +1,21 @@
+LLM Conversation Log – Task 5 Smart Home Security System
+
+The LLM was used to assist with:
+
+1) Writing structured pseudocode including:
+   - system active condition
+   - continuous sensor monitoring loop
+   - motion and door/window checks
+   - camera activation condition
+   - false alarm check (homeowner at home)
+   - alarm level selection (low/medium/high)
+   - sending SMS, app, and email notifications
+   - wait and re-check loop with reset condition
+
+2) Converting the pseudocode into:
+   - Graphviz DOT flowchart syntax
+   - Mermaid flowchart syntax
+
+3) Simplifying labels and structure to ensure diagrams render correctly.
+
+The final logic was reviewed before submission.
