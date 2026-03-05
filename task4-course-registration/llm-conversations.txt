@@ -1,0 +1,19 @@
+LLM Conversation Log – Task 4 Course Registration System
+
+The LLM was used to assist with:
+
+1) Writing structured pseudocode that includes:
+   - student login
+   - view course list loop
+   - add/drop course loop
+   - quota, prerequisite, schedule conflict, and credit limit checks (<= 35)
+   - advisor approval condition (GPA < 2.5)
+   - registration summary and confirmation
+
+2) Converting the pseudocode into:
+   - Graphviz DOT flowchart syntax
+   - Mermaid flowchart syntax
+
+3) Simplifying labels and structure to ensure correct diagram rendering.
+
+The final logic was reviewed before submission.
