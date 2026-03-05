@@ -1,0 +1,68 @@
+flowchart TB
+
+Start([START])
+Title[/PRINT Smart Home Security System/]
+Init[systemActive = READ_SYSTEM_STATUS\nalarmOn = FALSE]
+
+ActiveQ{systemActive is TRUE?}
+NotActive[/PRINT System not active/]
+WaitInactive[WAIT 5s\nsystemActive = READ_SYSTEM_STATUS]
+
+MonitorMsg[/PRINT Monitoring sensors/]
+ReadSensors[motionDetected = READ_MOTION_SENSOR\ndoorOpen = READ_DOOR_SENSOR\nwindowOpen = READ_WINDOW_SENSOR]
+
+AnyThreatQ{any sensor triggered?}
+WaitNoThreat[WAIT 5s]
+
+CamQ{trigger detected?}
+ActivateCam[ACTIVATE_CAMERA]
+
+OwnerAtHome[ownerAtHome = IS_HOMEOWNER_AT_HOME]
+FalseAlarmQ{ownerAtHome is TRUE?}
+LowFalse[alarmLevel = 1\nPRINT Possible false alarm]
+
+HighQ{door or window AND motion?}
+SetHigh[alarmLevel = 3]
+MediumQ{door OR window open?}
+SetMedium[alarmLevel = 2]
+SetLow[alarmLevel = 1]
+
+TriggerAlarm[alarmOn = TRUE\nPRINT Alarm triggered]
+Notify[SEND_SMS\nSEND_APP_NOTIFICATION\nSEND_EMAIL]
+
+Wait10[WAIT 10s]
+Recheck[motionDetected = READ_MOTION_SENSOR\ndoorOpen = READ_DOOR_SENSOR\nwindowOpen = READ_WINDOW_SENSOR]
+
+ResetAsk[/PRINT Reset alarm YES or NO\nREAD reset/]
+ResetQ{reset is YES?}
+ResetAlarm[alarmOn = FALSE\nDEACTIVATE_SIREN\nPRINT Alarm reset]
+
+ThreatStillQ{any sensor triggered?}
+StopAlarm[alarmOn = FALSE\nDEACTIVATE_SIREN\nPRINT No threat alarm stopped]
+ContinueMsg[/PRINT Threat continues/]
+
+UpdateActive[systemActive = READ_SYSTEM_STATUS]
+
+Start --> Title --> Init --> ActiveQ
+ActiveQ -- No --> NotActive --> WaitInactive --> ActiveQ
+ActiveQ -- Yes --> MonitorMsg --> ReadSensors --> AnyThreatQ
+
+AnyThreatQ -- No --> WaitNoThreat --> ActiveQ
+AnyThreatQ -- Yes --> CamQ
+CamQ -- Yes --> ActivateCam --> OwnerAtHome
+CamQ -- No --> OwnerAtHome
+
+OwnerAtHome --> FalseAlarmQ
+FalseAlarmQ -- Yes --> LowFalse --> TriggerAlarm
+FalseAlarmQ -- No --> HighQ
+
+HighQ -- Yes --> SetHigh --> TriggerAlarm
+HighQ -- No --> MediumQ
+MediumQ -- Yes --> SetMedium --> TriggerAlarm
+MediumQ -- No --> SetLow --> TriggerAlarm
+
+TriggerAlarm --> Notify --> Wait10 --> Recheck --> ResetAsk --> ResetQ
+ResetQ -- Yes --> ResetAlarm --> UpdateActive --> ActiveQ
+ResetQ -- No --> ThreatStillQ
+ThreatStillQ -- No --> StopAlarm --> UpdateActive --> ActiveQ
+ThreatStillQ -- Yes --> ContinueMsg --> Wait10
