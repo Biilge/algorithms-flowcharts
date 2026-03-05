@@ -1,0 +1,140 @@
+digraph CourseRegistrationSystem {
+  rankdir=TB;
+  fontsize=12;
+  labelloc="t";
+  label="University Course Registration System - Flowchart";
+
+  node [fontsize=11];
+  edge [fontsize=10];
+
+  // Shapes:
+  // Start/End: oval
+  // Input/Output: parallelogram
+  // Process: box
+  // Decision: diamond
+
+  Start [shape=oval, label="START"];
+  Title [shape=parallelogram, label="PRINT: Course Registration System"];
+
+  ReadID [shape=parallelogram, label="PRINT: Enter Student ID\nREAD: studentID"];
+  ReadPW [shape=parallelogram, label="PRINT: Enter Password\nREAD: password"];
+  LoginOK [shape=diamond, label="LOGIN_VALID?"];
+  LoginFail [shape=parallelogram, label="PRINT: Login failed"];
+  End [shape=oval, label="END"];
+  LoginSuccess [shape=parallelogram, label="PRINT: Login successful"];
+
+  Init [shape=box, label="selectedCourses = empty\ntotalCredits = 0"];
+
+  // Main action loop
+  Menu [shape=parallelogram, label="PRINT: Choose action\n1 View\n2 Add\n3 Drop\n4 Finish\nREAD: action"];
+  FinishQ [shape=diamond, label="action == 4?"];
+
+  ViewQ [shape=diamond, label="action == 1?"];
+  ShowList [shape=parallelogram, label="DISPLAY: courseList"];
+
+  AddQ [shape=diamond, label="action == 2?"];
+  DropQ [shape=diamond, label="action == 3?"];
+  InvalidAction [shape=parallelogram, label="PRINT: Invalid action"];
+
+  // Add course checks
+  ReadCourse [shape=parallelogram, label="PRINT: Enter course code to add\nREAD: course"];
+  QuotaFullQ [shape=diamond, label="COURSE_CAPACITY_FULL?"];
+  QuotaFullMsg [shape=parallelogram, label="PRINT: Course quota is full"];
+
+  PrereqFailQ [shape=diamond, label="PREREQUISITE_NOT_COMPLETED?"];
+  PrereqMsg [shape=parallelogram, label="PRINT: Prerequisite not satisfied"];
+
+  ConflictQ [shape=diamond, label="SCHEDULE_CONFLICT?"];
+  ConflictMsg [shape=parallelogram, label="PRINT: Schedule conflict"];
+
+  GetCredits [shape=box, label="courseCredits = GET_CREDITS(course)"];
+  CreditLimitQ [shape=diamond, label="totalCredits + courseCredits <= 35?"];
+  CreditMsg [shape=parallelogram, label="PRINT: Credit limit exceeded"];
+
+  AddCourse [shape=box, label="ADD course to selectedCourses\n(totalCredits += courseCredits)"];
+  AddedMsg [shape=parallelogram, label="PRINT: Course added"];
+
+  // Drop course
+  ReadDrop [shape=parallelogram, label="PRINT: Enter course code to drop\nREAD: dropCourse"];
+  InListQ [shape=diamond, label="dropCourse in selectedCourses?"];
+  NotFound [shape=parallelogram, label="PRINT: Course not found"];
+  DropProcess [shape=box, label="REMOVE dropCourse\ncourseCredits = GET_CREDITS(dropCourse)\n(totalCredits -= courseCredits)"];
+  DroppedMsg [shape=parallelogram, label="PRINT: Course removed"];
+
+  // After loop: advisor + summary + confirm
+  AdvisorTitle [shape=parallelogram, label="PRINT: Checking advisor approval"];
+  GetGPA [shape=box, label="gpa = GET_GPA(studentID)"];
+  AdvisorQ [shape=diamond, label="gpa < 2.5?"];
+  AdvisorMsg [shape=parallelogram, label="PRINT: Advisor approval required"];
+  SendReq [shape=box, label="SEND_APPROVAL_REQUEST(studentID)"];
+
+  Summary [shape=parallelogram, label="PRINT: Registration Summary\nDISPLAY selectedCourses\nPRINT totalCredits"];
+  ConfirmAsk [shape=parallelogram, label="PRINT: Confirm registration? YES/NO\nREAD: confirm"];
+  ConfirmQ [shape=diamond, label="confirm == YES?"];
+  Save [shape=box, label="SAVE_REGISTRATION(studentID, selectedCourses)"];
+  Done [shape=parallelogram, label="PRINT: Registration completed"];
+  Cancel [shape=parallelogram, label="PRINT: Registration cancelled"];
+
+  // Flow
+  Start -> Title -> ReadID -> ReadPW -> LoginOK;
+  LoginOK -> LoginSuccess [label="Yes"];
+  LoginOK -> LoginFail [label="No"];
+  LoginFail -> End;
+
+  LoginSuccess -> Init -> Menu;
+
+  // Menu branching
+  Menu -> FinishQ;
+  FinishQ -> AdvisorTitle [label="Yes"];
+  FinishQ -> ViewQ [label="No"];
+
+  ViewQ -> ShowList [label="Yes"];
+  ShowList -> Menu;
+  ViewQ -> AddQ [label="No"];
+
+  AddQ -> ReadCourse [label="Yes"];
+  AddQ -> DropQ [label="No"];
+
+  DropQ -> ReadDrop [label="Yes"];
+  DropQ -> InvalidAction [label="No"];
+  InvalidAction -> Menu;
+
+  // Add checks chain
+  ReadCourse -> QuotaFullQ;
+  QuotaFullQ -> QuotaFullMsg [label="Yes"];
+  QuotaFullMsg -> Menu;
+  QuotaFullQ -> PrereqFailQ [label="No"];
+
+  PrereqFailQ -> PrereqMsg [label="Yes"];
+  PrereqMsg -> Menu;
+  PrereqFailQ -> ConflictQ [label="No"];
+
+  ConflictQ -> ConflictMsg [label="Yes"];
+  ConflictMsg -> Menu;
+  ConflictQ -> GetCredits [label="No"];
+
+  GetCredits -> CreditLimitQ;
+  CreditLimitQ -> CreditMsg [label="No"];
+  CreditMsg -> Menu;
+  CreditLimitQ -> AddCourse [label="Yes"];
+  AddCourse -> AddedMsg -> Menu;
+
+  // Drop flow
+  ReadDrop -> InListQ;
+  InListQ -> NotFound [label="No"];
+  NotFound -> Menu;
+  InListQ -> DropProcess [label="Yes"];
+  DropProcess -> DroppedMsg -> Menu;
+
+  // Advisor + summary + confirm
+  AdvisorTitle -> GetGPA -> AdvisorQ;
+  AdvisorQ -> AdvisorMsg [label="Yes"];
+  AdvisorMsg -> SendReq -> Summary;
+  AdvisorQ -> Summary [label="No"];
+
+  Summary -> ConfirmAsk -> ConfirmQ;
+  ConfirmQ -> Save [label="Yes"];
+  Save -> Done -> End;
+  ConfirmQ -> Cancel [label="No"];
+  Cancel -> End;
+}
