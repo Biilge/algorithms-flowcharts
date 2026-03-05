@@ -1,0 +1,10 @@
+LLM Conversation Log – Task 2 Shopping Cart System
+
+The LLM was used to assist with the following steps:
+
+1. Generate pseudocode for the online shopping cart system.
+2. Convert the pseudocode into Graphviz DOT flowchart syntax.
+3. Convert the algorithm into Mermaid flowchart syntax.
+4. Fix syntax issues and simplify labels for diagram rendering.
+
+The algorithm structure and logic were reviewed before submission.
