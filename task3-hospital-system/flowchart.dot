@@ -1,0 +1,136 @@
+digraph HospitalSystem {
+  rankdir=TB;
+  fontsize=12;
+  labelloc="t";
+  label="Hospital Appointment and Test Results System - Flowchart";
+
+  node [fontsize=11];
+  edge [fontsize=10];
+
+  // Shapes:
+  // Start/End: oval
+  // Input/Output: parallelogram
+  // Process: box
+  // Decision: diamond
+
+  Start [shape=oval, label="START"];
+  Welcome [shape=parallelogram, label="PRINT: Welcome"];
+  ReadID [shape=parallelogram, label="PRINT: Enter ID\nREAD: idNumber"];
+  VerifyID [shape=diamond, label="VERIFY_ID(idNumber)?"];
+  VerifyFail [shape=parallelogram, label="PRINT: Verification failed"];
+  End [shape=oval, label="END"];
+  Verified [shape=parallelogram, label="PRINT: Identity verified"];
+
+  // Main loop menu
+  Menu [shape=parallelogram, label="PRINT: Select action\n1 Appointment\n2 Test Results\n3 Exit\nREAD: action"];
+  ExitQ [shape=diamond, label="action == 3?"];
+  Goodbye [shape=parallelogram, label="PRINT: Goodbye"];
+
+  ApptQ [shape=diamond, label="action == 1?"];
+  TestQ [shape=diamond, label="action == 2?"];
+  InvalidSel [shape=parallelogram, label="PRINT: Invalid selection"];
+
+  AgainAsk [shape=parallelogram, label="PRINT: Another action? (YES/NO)\nREAD: again"];
+  AgainQ [shape=diamond, label="again == YES?"];
+
+  // Appointment module
+  ApptTitle [shape=parallelogram, label="PRINT: Appointment Module"];
+  ReadClinic [shape=parallelogram, label="PRINT: Select clinic\nREAD: clinic"];
+  GetDoctors [shape=box, label="doctorList = GET_DOCTORS(clinic)"];
+  ReadDoctor [shape=parallelogram, label="PRINT: Select doctor or BACK\nREAD: doctor"];
+  DoctorBackQ [shape=diamond, label="doctor == BACK?"];
+  GetSlots [shape=box, label="timeSlots = GET_AVAILABLE_SLOTS(doctor)"];
+  SlotsEmptyQ [shape=diamond, label="timeSlots empty?"];
+  NoSlots [shape=parallelogram, label="PRINT: No slots\nChoose another doctor"];
+
+  ReadSlot [shape=parallelogram, label="PRINT: Select slot or BACK\nREAD: slot"];
+  SlotBackQ [shape=diamond, label="slot == BACK?"];
+  SlotAvailQ [shape=diamond, label="SLOT_IS_AVAILABLE(doctor, slot)?"];
+  SlotNotAvail [shape=parallelogram, label="PRINT: Slot not available"];
+
+  ConfirmAsk [shape=parallelogram, label="PRINT: Confirm? (YES/NO)\nREAD: confirm"];
+  ConfirmQ [shape=diamond, label="confirm == YES?"];
+  CreateAppt [shape=box, label="CREATE_APPOINTMENT(...)"];
+  ApptConfirmed [shape=parallelogram, label="PRINT: Appointment confirmed"];
+  SendSMS [shape=box, label="SEND_SMS(idNumber, message)"];
+  SMSSent [shape=parallelogram, label="PRINT: SMS sent"];
+  NotConfirmed [shape=parallelogram, label="PRINT: Appointment not confirmed"];
+
+  // Test results module
+  TestTitle [shape=parallelogram, label="PRINT: Test Results Module"];
+  TestsExistQ [shape=diamond, label="TESTS_EXIST(idNumber)?"];
+  NoTests [shape=parallelogram, label="PRINT: No tests found"];
+  ReadyQ [shape=diamond, label="RESULTS_READY(idNumber)?"];
+  NotReady [shape=parallelogram, label="PRINT: Results not ready yet"];
+
+  GetResults [shape=box, label="results = GET_RESULTS(idNumber)"];
+  DisplayResults [shape=parallelogram, label="DISPLAY results"];
+  DownloadAsk [shape=parallelogram, label="PRINT: Download PDF? (YES/NO)\nREAD: download"];
+  DownloadQ [shape=diamond, label="download == YES?"];
+  GenPDF [shape=box, label="GENERATE_PDF(results)"];
+  PDFMsg [shape=parallelogram, label="PRINT: PDF downloaded"];
+
+  // Flow: start + verification
+  Start -> Welcome -> ReadID -> VerifyID;
+  VerifyID -> Verified [label="Yes"];
+  VerifyID -> VerifyFail [label="No"];
+  VerifyFail -> End;
+
+  // Main loop
+  Verified -> Menu;
+  Menu -> ExitQ;
+  ExitQ -> Goodbye [label="Yes"];
+  Goodbye -> End;
+  ExitQ -> ApptQ [label="No"];
+
+  ApptQ -> ApptTitle [label="Yes"];
+  ApptQ -> TestQ [label="No"];
+
+  TestQ -> TestTitle [label="Yes"];
+  TestQ -> InvalidSel [label="No"];
+  InvalidSel -> AgainAsk;
+
+  // Appointment module flow
+  ApptTitle -> ReadClinic -> GetDoctors -> ReadDoctor -> DoctorBackQ;
+  DoctorBackQ -> AgainAsk [label="Yes"];
+  DoctorBackQ -> GetSlots [label="No"];
+  GetSlots -> SlotsEmptyQ;
+  SlotsEmptyQ -> NoSlots [label="Yes"];
+  NoSlots -> ReadDoctor;
+  SlotsEmptyQ -> ReadSlot [label="No"];
+
+  ReadSlot -> SlotBackQ;
+  SlotBackQ -> ReadDoctor [label="Yes"];
+  SlotBackQ -> SlotAvailQ [label="No"];
+
+  SlotAvailQ -> SlotNotAvail [label="No"];
+  SlotNotAvail -> ReadSlot;
+  SlotAvailQ -> ConfirmAsk [label="Yes"];
+
+  ConfirmAsk -> ConfirmQ;
+  ConfirmQ -> CreateAppt [label="Yes"];
+  ConfirmQ -> NotConfirmed [label="No"];
+
+  CreateAppt -> ApptConfirmed -> SendSMS -> SMSSent -> AgainAsk;
+  NotConfirmed -> AgainAsk;
+
+  // Test results module flow
+  TestTitle -> TestsExistQ;
+  TestsExistQ -> NoTests [label="No"];
+  NoTests -> AgainAsk;
+
+  TestsExistQ -> ReadyQ [label="Yes"];
+  ReadyQ -> NotReady [label="No"];
+  NotReady -> AgainAsk;
+
+  ReadyQ -> GetResults [label="Yes"];
+  GetResults -> DisplayResults -> DownloadAsk -> DownloadQ;
+  DownloadQ -> GenPDF [label="Yes"];
+  GenPDF -> PDFMsg -> AgainAsk;
+  DownloadQ -> AgainAsk [label="No"];
+
+  // Repeat?
+  AgainAsk -> AgainQ;
+  AgainQ -> Menu [label="Yes"];
+  AgainQ -> End [label="No"];
+}
