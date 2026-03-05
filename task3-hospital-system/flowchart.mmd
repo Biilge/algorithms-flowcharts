@@ -1,0 +1,92 @@
+flowchart TB
+
+Start([START])
+Welcome[/PRINT Welcome/]
+ReadID[/PRINT Enter ID\nREAD idNumber/]
+VerifyID{VERIFY_ID OK?}
+VerifyFail[/PRINT Verification failed/]
+End([END])
+Verified[/PRINT Identity verified/]
+
+Menu[/PRINT Select action\n1 Appointment\n2 Test Results\n3 Exit\nREAD action/]
+ExitQ{action is 3?}
+Goodbye[/PRINT Goodbye/]
+
+ApptQ{action is 1?}
+TestQ{action is 2?}
+InvalidSel[/PRINT Invalid selection/]
+
+AgainAsk[/PRINT Another action YES or NO\nREAD again/]
+AgainQ{again is YES?}
+
+%% Appointment module
+ApptTitle[/PRINT Appointment Module/]
+ReadClinic[/PRINT Select clinic\nREAD clinic/]
+GetDoctors[doctorList = GET_DOCTORS]
+ReadDoctor[/PRINT Select doctor or BACK\nREAD doctor/]
+DoctorBackQ{doctor is BACK?}
+GetSlots[timeSlots = GET_AVAILABLE_SLOTS]
+SlotsEmptyQ{timeSlots empty?}
+NoSlots[/PRINT No slots choose another doctor/]
+
+ReadSlot[/PRINT Select slot or BACK\nREAD slot/]
+SlotBackQ{slot is BACK?}
+SlotAvailQ{slot available?}
+SlotNotAvail[/PRINT Slot not available/]
+
+ConfirmAsk[/PRINT Confirm YES or NO\nREAD confirm/]
+ConfirmQ{confirm is YES?}
+CreateAppt[CREATE_APPOINTMENT]
+ApptConfirmed[/PRINT Appointment confirmed/]
+SendSMS[SEND_SMS]
+SMSSent[/PRINT SMS sent/]
+NotConfirmed[/PRINT Appointment not confirmed/]
+
+%% Test results module
+TestTitle[/PRINT Test Results Module/]
+TestsExistQ{tests exist?}
+NoTests[/PRINT No tests found/]
+ReadyQ{results ready?}
+NotReady[/PRINT Results not ready yet/]
+GetResults[results = GET_RESULTS]
+DisplayResults[/DISPLAY results/]
+DownloadAsk[/PRINT Download PDF YES or NO\nREAD download/]
+DownloadQ{download is YES?}
+GenPDF[GENERATE_PDF]
+PDFMsg[/PRINT PDF downloaded/]
+
+%% Flow
+Start --> Welcome --> ReadID --> VerifyID
+VerifyID -- No --> VerifyFail --> End
+VerifyID -- Yes --> Verified --> Menu
+
+Menu --> ExitQ
+ExitQ -- Yes --> Goodbye --> End
+ExitQ -- No --> ApptQ
+
+ApptQ -- Yes --> ApptTitle --> ReadClinic --> GetDoctors --> ReadDoctor --> DoctorBackQ
+DoctorBackQ -- Yes --> AgainAsk
+DoctorBackQ -- No --> GetSlots --> SlotsEmptyQ
+SlotsEmptyQ -- Yes --> NoSlots --> ReadDoctor
+SlotsEmptyQ -- No --> ReadSlot --> SlotBackQ
+SlotBackQ -- Yes --> ReadDoctor
+SlotBackQ -- No --> SlotAvailQ
+SlotAvailQ -- No --> SlotNotAvail --> ReadSlot
+SlotAvailQ -- Yes --> ConfirmAsk --> ConfirmQ
+ConfirmQ -- Yes --> CreateAppt --> ApptConfirmed --> SendSMS --> SMSSent --> AgainAsk
+ConfirmQ -- No --> NotConfirmed --> AgainAsk
+
+ApptQ -- No --> TestQ
+TestQ -- No --> InvalidSel --> AgainAsk
+
+TestQ -- Yes --> TestTitle --> TestsExistQ
+TestsExistQ -- No --> NoTests --> AgainAsk
+TestsExistQ -- Yes --> ReadyQ
+ReadyQ -- No --> NotReady --> AgainAsk
+ReadyQ -- Yes --> GetResults --> DisplayResults --> DownloadAsk --> DownloadQ
+DownloadQ -- Yes --> GenPDF --> PDFMsg --> AgainAsk
+DownloadQ -- No --> AgainAsk
+
+AgainAsk --> AgainQ
+AgainQ -- Yes --> Menu
+AgainQ -- No --> End
