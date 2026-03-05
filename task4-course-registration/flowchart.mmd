@@ -1,0 +1,95 @@
+flowchart TB
+
+Start([START])
+Title[/PRINT Course Registration System/]
+
+ReadID[/PRINT Enter Student ID\nREAD studentID/]
+ReadPW[/PRINT Enter Password\nREAD password/]
+LoginOK{LOGIN_VALID?}
+LoginFail[/PRINT Login failed/]
+End([END])
+LoginSuccess[/PRINT Login successful/]
+
+Init[INIT selectedCourses empty\nINIT totalCredits = 0]
+
+Menu[/PRINT Choose action\n1 View\n2 Add\n3 Drop\n4 Finish\nREAD action/]
+FinishQ{action is 4?}
+
+ViewQ{action is 1?}
+ShowList[/DISPLAY courseList/]
+
+AddQ{action is 2?}
+DropQ{action is 3?}
+InvalidAction[/PRINT Invalid action/]
+
+ReadCourse[/PRINT Enter course code to add\nREAD course/]
+QuotaFullQ{quota full?}
+QuotaFullMsg[/PRINT Course quota is full/]
+
+PrereqFailQ{prerequisite not completed?}
+PrereqMsg[/PRINT Prerequisite not satisfied/]
+
+ConflictQ{schedule conflict?}
+ConflictMsg[/PRINT Schedule conflict detected/]
+
+GetCredits[courseCredits = GET_CREDITS]
+CreditLimitQ{totalCredits + courseCredits <= 35?}
+CreditMsg[/PRINT Credit limit exceeded/]
+
+AddCourse[ADD course\nUPDATE totalCredits]
+AddedMsg[/PRINT Course added/]
+
+ReadDrop[/PRINT Enter course code to drop\nREAD dropCourse/]
+InListQ{dropCourse in selectedCourses?}
+NotFound[/PRINT Course not found/]
+DropProcess[REMOVE course\nUPDATE totalCredits]
+DroppedMsg[/PRINT Course removed/]
+
+AdvisorTitle[/PRINT Checking advisor approval/]
+GetGPA[gpa = GET_GPA]
+AdvisorQ{gpa < 2.5?}
+AdvisorMsg[/PRINT Advisor approval required/]
+SendReq[SEND_APPROVAL_REQUEST]
+
+Summary[/PRINT Registration Summary\nDISPLAY selectedCourses\nPRINT totalCredits/]
+ConfirmAsk[/PRINT Confirm registration YES or NO\nREAD confirm/]
+ConfirmQ{confirm is YES?}
+Save[SAVE_REGISTRATION]
+Done[/PRINT Registration completed/]
+Cancel[/PRINT Registration cancelled/]
+
+Start --> Title --> ReadID --> ReadPW --> LoginOK
+LoginOK -- Yes --> LoginSuccess --> Init --> Menu
+LoginOK -- No --> LoginFail --> End
+
+Menu --> FinishQ
+FinishQ -- Yes --> AdvisorTitle --> GetGPA --> AdvisorQ
+FinishQ -- No --> ViewQ
+
+ViewQ -- Yes --> ShowList --> Menu
+ViewQ -- No --> AddQ
+
+AddQ -- Yes --> ReadCourse --> QuotaFullQ
+AddQ -- No --> DropQ
+
+DropQ -- Yes --> ReadDrop --> InListQ
+DropQ -- No --> InvalidAction --> Menu
+
+QuotaFullQ -- Yes --> QuotaFullMsg --> Menu
+QuotaFullQ -- No --> PrereqFailQ
+PrereqFailQ -- Yes --> PrereqMsg --> Menu
+PrereqFailQ -- No --> ConflictQ
+ConflictQ -- Yes --> ConflictMsg --> Menu
+ConflictQ -- No --> GetCredits --> CreditLimitQ
+CreditLimitQ -- No --> CreditMsg --> Menu
+CreditLimitQ -- Yes --> AddCourse --> AddedMsg --> Menu
+
+InListQ -- No --> NotFound --> Menu
+InListQ -- Yes --> DropProcess --> DroppedMsg --> Menu
+
+AdvisorQ -- Yes --> AdvisorMsg --> SendReq --> Summary
+AdvisorQ -- No --> Summary
+
+Summary --> ConfirmAsk --> ConfirmQ
+ConfirmQ -- Yes --> Save --> Done --> End
+ConfirmQ -- No --> Cancel --> End
