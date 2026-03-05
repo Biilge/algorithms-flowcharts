@@ -1,0 +1,245 @@
+digraph ShoppingCartSystem {
+  rankdir=TB;
+  fontsize=12;
+  labelloc="t";
+  label="Online Shopping Cart System - Flowchart";
+
+  node [fontsize=11];
+  edge [fontsize=10];
+
+  // Shapes:
+  // Start/End: oval
+  // Input/Output: parallelogram
+  // Process: box
+  // Decision: diamond
+
+  Start [shape=oval, label="START"];
+  Welcome [shape=parallelogram, label="PRINT: Welcome"];
+  AskLogged [shape=parallelogram, label="PRINT: Logged in? (YES/NO)\nREAD: isLoggedIn"];
+  NeedLogin [shape=diamond, label="isLoggedIn == YES?"];
+
+  ReadUser [shape=parallelogram, label="READ: username\nREAD: password"];
+  ValidLogin [shape=diamond, label="LOGIN_VALID?"];
+  LoginFail [shape=parallelogram, label="PRINT: Login failed"];
+  End [shape=oval, label="END"];
+  LoginOk [shape=parallelogram, label="PRINT: Login successful"];
+
+  Init [shape=box, label="INIT cartItems empty\nINIT discount vars"];
+
+  // Main menu loop
+  Menu [shape=parallelogram, label="PRINT: Choose action\nBROWSE/CART/CHECKOUT/EXIT\nREAD: action"];
+  ExitQ [shape=diamond, label="action == EXIT?"];
+  Goodbye [shape=parallelogram, label="PRINT: Goodbye"];
+
+  BrowseQ [shape=diamond, label="action == BROWSE?"];
+  CartQ [shape=diamond, label="action == CART?"];
+  CheckoutQ [shape=diamond, label="action == CHECKOUT?"];
+  InvalidAction [shape=parallelogram, label="PRINT: Invalid action"];
+
+  // -------- BROWSE LOOP --------
+  BrowseCategory [shape=parallelogram, label="PRINT: Enter category or BACK\nREAD: category"];
+  CatBackQ [shape=diamond, label="category == BACK?"];
+  ShowProducts [shape=parallelogram, label="PRINT: Show products in category"];
+  ReadProduct [shape=parallelogram, label="PRINT: Enter productID or BACK\nREAD: productID"];
+  ProdBackQ [shape=diamond, label="productID == BACK?"];
+  ReadQty [shape=parallelogram, label="PRINT: Enter quantity\nREAD: qty"];
+  QtyValidQ [shape=diamond, label="qty > 0?"];
+  QtyInvalid [shape=parallelogram, label="PRINT: Invalid quantity"];
+  StockProc [shape=box, label="stock = QUERY_STOCK(productID)"];
+  StockEnoughQ [shape=diamond, label="qty <= stock?"];
+  StockNotEnough [shape=parallelogram, label="PRINT: Insufficient stock\nPRINT: Available stock"];
+  AddToCart [shape=box, label="ADD_TO_CART(cartItems, productID, qty)"];
+  AddedMsg [shape=parallelogram, label="PRINT: Added to cart"];
+
+  // -------- CART LOOP --------
+  ShowCart [shape=parallelogram, label="DISPLAY cartItems\nPRINT: EDIT/REMOVE/CLEAR/BACK\nREAD: cartAction"];
+  CartBackQ [shape=diamond, label="cartAction == BACK?"];
+  CartClearQ [shape=diamond, label="cartAction == CLEAR?"];
+  DoClear [shape=box, label="CLEAR cartItems"];
+  ClearedMsg [shape=parallelogram, label="PRINT: Cart cleared"];
+
+  CartEditQ [shape=diamond, label="cartAction == EDIT?"];
+  ReadEditID [shape=parallelogram, label="READ: editID\nREAD: newQty"];
+  NewQtyValidQ [shape=diamond, label="newQty > 0?"];
+  NewQtyInvalid [shape=parallelogram, label="PRINT: Invalid quantity"];
+  StockProc2 [shape=box, label="stock = QUERY_STOCK(editID)"];
+  StockEnoughQ2 [shape=diamond, label="newQty <= stock?"];
+  StockNotEnough2 [shape=parallelogram, label="PRINT: Insufficient stock\nPRINT: Available stock"];
+  UpdateCart [shape=box, label="UPDATE_CART(cartItems, editID, newQty)"];
+  UpdatedMsg [shape=parallelogram, label="PRINT: Cart updated"];
+
+  CartRemoveQ [shape=diamond, label="cartAction == REMOVE?"];
+  ReadRemoveID [shape=parallelogram, label="READ: removeID"];
+  RemoveItem [shape=box, label="REMOVE_FROM_CART(cartItems, removeID)"];
+  RemovedMsg [shape=parallelogram, label="PRINT: Item removed"];
+
+  CartInvalid [shape=parallelogram, label="PRINT: Invalid cart command"];
+
+  // -------- CHECKOUT --------
+  EmptyCartQ [shape=diamond, label="CART_IS_EMPTY?"];
+  EmptyMsg [shape=parallelogram, label="PRINT: Cart is empty"];
+
+  SubtotalProc [shape=box, label="cartSubtotal = CALCULATE_SUBTOTAL(cartItems)"];
+  PrintSubtotal [shape=parallelogram, label="PRINT: Subtotal"];
+
+  AskDiscount [shape=parallelogram, label="PRINT: Apply discount? (YES/NO)\nREAD: applyDiscount"];
+  DiscountQ [shape=diamond, label="applyDiscount == YES?"];
+  ReadCode [shape=parallelogram, label="PRINT: Enter code\nREAD: discountCode"];
+  ValidCodeQ [shape=diamond, label="VALIDATE_DISCOUNT_CODE?"];
+  CalcDiscount [shape=box, label="discountAmount = CALCULATE_DISCOUNT(cartSubtotal, code)\nSET discountApplied=TRUE"];
+  InvalidCode [shape=parallelogram, label="PRINT: Invalid discount code\nSET discountAmount=0\nSET discountApplied=FALSE"];
+  NoDiscount [shape=box, label="SET discountAmount=0\nSET discountApplied=FALSE"];
+
+  TotalAfter [shape=box, label="totalAfterDiscount = cartSubtotal - discountAmount"];
+  PrintAfter [shape=parallelogram, label="PRINT: Total after discount"];
+
+  MinOrderQ [shape=diamond, label="totalAfterDiscount >= 10?"];
+  MinFail [shape=parallelogram, label="PRINT: Minimum order is $10\nPRINT: Add more items"];
+
+  ShipFreeQ [shape=diamond, label="totalAfterDiscount >= 40?"];
+  ShipFree [shape=box, label="shippingFee = 0"];
+  ShipPaid [shape=box, label="shippingFee = 5"];
+  PrintShip [shape=parallelogram, label="PRINT: Shipping fee / Free shipping"];
+
+  FinalTotal [shape=box, label="finalTotal = totalAfterDiscount + shippingFee"];
+  PrintFinal [shape=parallelogram, label="PRINT: Final total"];
+
+  PayRead [shape=parallelogram, label="PRINT: Payment method\nCARD/CASH_ON_DELIVERY\nREAD: paymentMethod"];
+  PayCardQ [shape=diamond, label="paymentMethod == CARD?"];
+  PayCODQ [shape=diamond, label="paymentMethod == CASH_ON_DELIVERY?"];
+  PayInvalid [shape=parallelogram, label="PRINT: Invalid payment method"];
+
+  ReadCard [shape=parallelogram, label="READ: cardNumber\nREAD: expiry\nREAD: cvv"];
+  PayOkQ [shape=diamond, label="PROCESS_CARD_PAYMENT OK?"];
+  PayFail [shape=parallelogram, label="PRINT: Payment failed"];
+  PayOk [shape=parallelogram, label="PRINT: Payment successful"];
+  CODMsg [shape=parallelogram, label="PRINT: Cash on delivery selected"];
+
+  ConfirmRead [shape=parallelogram, label="PRINT: Confirm order? (YES/NO)\nREAD: confirm"];
+  ConfirmQ [shape=diamond, label="confirm == YES?"];
+  CreateOrder [shape=box, label="CREATE_ORDER(cartItems, finalTotal, paymentMethod)\nCLEAR cartItems"];
+  ConfirmMsg [shape=parallelogram, label="PRINT: Order confirmed"];
+  CancelMsg [shape=parallelogram, label="PRINT: Order cancelled"];
+
+  // ---------- FLOW ----------
+  Start -> Welcome -> AskLogged -> NeedLogin;
+
+  NeedLogin -> LoginOk [label="Yes"];
+  NeedLogin -> ReadUser [label="No"];
+  ReadUser -> ValidLogin;
+  ValidLogin -> LoginOk [label="Yes"];
+  ValidLogin -> LoginFail [label="No"];
+  LoginFail -> End;
+
+  LoginOk -> Init -> Menu;
+
+  // Menu decisions
+  Menu -> ExitQ;
+  ExitQ -> Goodbye [label="Yes"];
+  Goodbye -> End;
+  ExitQ -> BrowseQ [label="No"];
+
+  BrowseQ -> BrowseCategory [label="Yes"];
+  BrowseQ -> CartQ [label="No"];
+
+  CartQ -> ShowCart [label="Yes"];
+  CartQ -> CheckoutQ [label="No"];
+
+  CheckoutQ -> EmptyCartQ [label="Yes"];
+  CheckoutQ -> InvalidAction [label="No"];
+  InvalidAction -> Menu;
+
+  // Browse loop
+  BrowseCategory -> CatBackQ;
+  CatBackQ -> Menu [label="Yes"];
+  CatBackQ -> ShowProducts [label="No"];
+  ShowProducts -> ReadProduct -> ProdBackQ;
+  ProdBackQ -> BrowseCategory [label="Yes"];
+  ProdBackQ -> ReadQty [label="No"];
+  ReadQty -> QtyValidQ;
+  QtyValidQ -> QtyInvalid [label="No"];
+  QtyInvalid -> ReadQty;
+  QtyValidQ -> StockProc [label="Yes"];
+  StockProc -> StockEnoughQ;
+  StockEnoughQ -> StockNotEnough [label="No"];
+  StockNotEnough -> ReadQty;
+  StockEnoughQ -> AddToCart [label="Yes"];
+  AddToCart -> AddedMsg -> BrowseCategory;
+
+  // Cart loop
+  ShowCart -> CartBackQ;
+  CartBackQ -> Menu [label="Yes"];
+  CartBackQ -> CartClearQ [label="No"];
+  CartClearQ -> DoClear [label="Yes"];
+  DoClear -> ClearedMsg -> ShowCart;
+  CartClearQ -> CartEditQ [label="No"];
+
+  CartEditQ -> ReadEditID [label="Yes"];
+  CartEditQ -> CartRemoveQ [label="No"];
+
+  ReadEditID -> NewQtyValidQ;
+  NewQtyValidQ -> NewQtyInvalid [label="No"];
+  NewQtyInvalid -> ShowCart;
+  NewQtyValidQ -> StockProc2 [label="Yes"];
+  StockProc2 -> StockEnoughQ2;
+  StockEnoughQ2 -> StockNotEnough2 [label="No"];
+  StockNotEnough2 -> ShowCart;
+  StockEnoughQ2 -> UpdateCart [label="Yes"];
+  UpdateCart -> UpdatedMsg -> ShowCart;
+
+  CartRemoveQ -> ReadRemoveID [label="Yes"];
+  CartRemoveQ -> CartInvalid [label="No"];
+  ReadRemoveID -> RemoveItem -> RemovedMsg -> ShowCart;
+  CartInvalid -> ShowCart;
+
+  // Checkout flow
+  EmptyCartQ -> EmptyMsg [label="Yes"];
+  EmptyMsg -> Menu;
+  EmptyCartQ -> SubtotalProc [label="No"];
+
+  SubtotalProc -> PrintSubtotal -> AskDiscount -> DiscountQ;
+  DiscountQ -> ReadCode [label="Yes"];
+  DiscountQ -> NoDiscount [label="No"];
+
+  ReadCode -> ValidCodeQ;
+  ValidCodeQ -> CalcDiscount [label="Yes"];
+  ValidCodeQ -> InvalidCode [label="No"];
+
+  CalcDiscount -> TotalAfter;
+  InvalidCode -> TotalAfter;
+  NoDiscount -> TotalAfter;
+
+  TotalAfter -> PrintAfter -> MinOrderQ;
+  MinOrderQ -> MinFail [label="No"];
+  MinFail -> Menu;
+
+  MinOrderQ -> ShipFreeQ [label="Yes"];
+  ShipFreeQ -> ShipFree [label="Yes"];
+  ShipFreeQ -> ShipPaid [label="No"];
+  ShipFree -> PrintShip;
+  ShipPaid -> PrintShip;
+
+  PrintShip -> FinalTotal -> PrintFinal -> PayRead -> PayCardQ;
+
+  PayCardQ -> ReadCard [label="Yes"];
+  PayCardQ -> PayCODQ [label="No"];
+
+  ReadCard -> PayOkQ;
+  PayOkQ -> PayOk [label="Yes"];
+  PayOkQ -> PayFail [label="No"];
+  PayFail -> Menu;
+
+  PayCODQ -> CODMsg [label="Yes"];
+  PayCODQ -> PayInvalid [label="No"];
+  PayInvalid -> Menu;
+
+  PayOk -> ConfirmRead;
+  CODMsg -> ConfirmRead;
+
+  ConfirmRead -> ConfirmQ;
+  ConfirmQ -> CreateOrder [label="Yes"];
+  ConfirmQ -> CancelMsg [label="No"];
+
+  CreateOrder -> ConfirmMsg -> Menu;
+  CancelMsg -> Menu;
+}
