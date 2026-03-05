@@ -1,0 +1,10 @@
+LLM Conversation Log – Task 3 Hospital System
+
+The LLM was used to assist with the following steps:
+
+1. Generate pseudocode for the hospital appointment and test results system.
+2. Convert the algorithm into Graphviz DOT flowchart syntax.
+3. Convert the algorithm into Mermaid flowchart syntax.
+4. Adjust syntax and simplify labels to ensure diagrams render correctly.
+
+The final algorithm structure and logic were reviewed before submission.
