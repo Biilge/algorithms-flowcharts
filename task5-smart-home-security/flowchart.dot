@@ -1,0 +1,97 @@
+digraph SmartHomeSecurity {
+  rankdir=TB;
+  fontsize=12;
+  labelloc="t";
+  label="Smart Home Security System - Flowchart";
+
+  node [fontsize=11];
+  edge [fontsize=10];
+
+  Start [shape=oval, label="START"];
+  Title [shape=parallelogram, label="PRINT: Smart Home Security System"];
+  Init [shape=box, label="systemActive = READ_SYSTEM_STATUS()\nalarmOn = FALSE"];
+
+  ActiveQ [shape=diamond, label="systemActive == TRUE?"];
+  NotActive [shape=parallelogram, label="PRINT: System not active"];
+  WaitInactive [shape=box, label="WAIT 5s\nsystemActive = READ_SYSTEM_STATUS()"];
+
+  MonitorMsg [shape=parallelogram, label="PRINT: Monitoring sensors"];
+  ReadSensors [shape=box, label="motionDetected = READ_MOTION_SENSOR()\ndoorOpen = READ_DOOR_SENSOR()\nwindowOpen = READ_WINDOW_SENSOR()"];
+
+  AnyThreatQ [shape=diamond, label="Any sensor triggered?"];
+  WaitNoThreat [shape=box, label="WAIT 5s"];
+
+  CamQ [shape=diamond, label="Trigger detected?"];
+  ActivateCam [shape=box, label="ACTIVATE_CAMERA()"];
+
+  OwnerAtHome [shape=box, label="ownerAtHome = IS_HOMEOWNER_AT_HOME()"];
+  FalseAlarmQ [shape=diamond, label="ownerAtHome == TRUE?"];
+  LowFalse [shape=box, label="alarmLevel = 1 (LOW)\nPRINT: Possible false alarm"];
+
+  HighQ [shape=diamond, label="(door/window) AND motion?"];
+  SetHigh [shape=box, label="alarmLevel = 3 (HIGH)"];
+  MediumQ [shape=diamond, label="door OR window open?"];
+  SetMedium [shape=box, label="alarmLevel = 2 (MEDIUM)"];
+  SetLow [shape=box, label="alarmLevel = 1 (LOW)"];
+
+  TriggerAlarm [shape=box, label="alarmOn = TRUE\nPRINT: Alarm triggered"];
+  Notify [shape=box, label="SEND_SMS(level)\nSEND_APP_NOTIFICATION(level)\nSEND_EMAIL(level)"];
+
+  // Re-check loop
+  Wait10 [shape=box, label="WAIT 10s"];
+  Recheck [shape=box, label="motionDetected = READ_MOTION_SENSOR()\ndoorOpen = READ_DOOR_SENSOR()\nwindowOpen = READ_WINDOW_SENSOR()"];
+
+  ResetAsk [shape=parallelogram, label="PRINT: Reset alarm? YES/NO\nREAD: reset"];
+  ResetQ [shape=diamond, label="reset == YES?"];
+  ResetAlarm [shape=box, label="alarmOn = FALSE\nDEACTIVATE_SIREN()\nPRINT: Alarm reset"];
+
+  ThreatStillQ [shape=diamond, label="Any sensor triggered?"];
+  StopAlarm [shape=box, label="alarmOn = FALSE\nDEACTIVATE_SIREN()\nPRINT: No threat, alarm stopped"];
+  ContinueMsg [shape=parallelogram, label="PRINT: Threat continues"];
+
+  UpdateActive [shape=box, label="systemActive = READ_SYSTEM_STATUS()"];
+
+  // Flow
+  Start -> Title -> Init -> ActiveQ;
+
+  ActiveQ -> NotActive [label="No"];
+  NotActive -> WaitInactive -> ActiveQ;
+
+  ActiveQ -> MonitorMsg [label="Yes"];
+  MonitorMsg -> ReadSensors -> AnyThreatQ;
+
+  AnyThreatQ -> WaitNoThreat [label="No"];
+  WaitNoThreat -> ActiveQ;
+
+  AnyThreatQ -> CamQ [label="Yes"];
+  CamQ -> ActivateCam [label="Yes"];
+  ActivateCam -> OwnerAtHome;
+  CamQ -> OwnerAtHome [label="No"];
+
+  OwnerAtHome -> FalseAlarmQ;
+  FalseAlarmQ -> LowFalse [label="Yes"];
+  LowFalse -> TriggerAlarm;
+
+  FalseAlarmQ -> HighQ [label="No"];
+  HighQ -> SetHigh [label="Yes"];
+  SetHigh -> TriggerAlarm;
+
+  HighQ -> MediumQ [label="No"];
+  MediumQ -> SetMedium [label="Yes"];
+  SetMedium -> TriggerAlarm;
+
+  MediumQ -> SetLow [label="No"];
+  SetLow -> TriggerAlarm;
+
+  TriggerAlarm -> Notify -> Wait10 -> Recheck -> ResetAsk -> ResetQ;
+
+  ResetQ -> ResetAlarm [label="Yes"];
+  ResetAlarm -> UpdateActive -> ActiveQ;
+
+  ResetQ -> ThreatStillQ [label="No"];
+  ThreatStillQ -> StopAlarm [label="No"];
+  StopAlarm -> UpdateActive -> ActiveQ;
+
+  ThreatStillQ -> ContinueMsg [label="Yes"];
+  ContinueMsg -> Wait10;
+}
