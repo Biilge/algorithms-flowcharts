@@ -1,0 +1,184 @@
+flowchart TB
+
+Start([START])
+Welcome[/PRINT Welcome/]
+AskLogged[/PRINT Logged in YES or NO\nREAD isLoggedIn/]
+NeedLogin{isLoggedIn is YES?}
+
+ReadCreds[/READ username and password/]
+ValidLogin{LOGIN_VALID?}
+LoginFail[/PRINT Login failed/]
+End([END])
+LoginOk[/PRINT Login successful/]
+
+Init[INIT cart and discount variables]
+
+Menu[/PRINT Choose action\nBROWSE CART CHECKOUT EXIT\nREAD action/]
+ExitQ{action is EXIT?}
+Goodbye[/PRINT Goodbye/]
+
+BrowseQ{action is BROWSE?}
+CartQ{action is CART?}
+CheckoutQ{action is CHECKOUT?}
+InvalidAction[/PRINT Invalid action/]
+
+%% -------- BROWSE LOOP --------
+BrowseCategory[/PRINT Enter category or BACK\nREAD category/]
+CatBackQ{category is BACK?}
+ShowProducts[/PRINT Show products in category/]
+ReadProduct[/PRINT Enter productID or BACK\nREAD productID/]
+ProdBackQ{productID is BACK?}
+ReadQty[/PRINT Enter quantity\nREAD qty/]
+QtyValidQ{qty > 0?}
+QtyInvalid[/PRINT Invalid quantity/]
+StockProc[stock = QUERY_STOCK]
+StockEnoughQ{qty <= stock?}
+StockNotEnough[/PRINT Insufficient stock/]
+AddToCart[ADD_TO_CART]
+AddedMsg[/PRINT Added to cart/]
+
+%% -------- CART LOOP --------
+ShowCart[/DISPLAY cartItems\nPRINT EDIT REMOVE CLEAR BACK\nREAD cartAction/]
+CartBackQ{cartAction is BACK?}
+CartClearQ{cartAction is CLEAR?}
+DoClear[CLEAR cartItems]
+ClearedMsg[/PRINT Cart cleared/]
+
+CartEditQ{cartAction is EDIT?}
+ReadEdit[/READ editID and newQty/]
+NewQtyValidQ{newQty > 0?}
+NewQtyInvalid[/PRINT Invalid quantity/]
+StockProc2[stock = QUERY_STOCK]
+StockEnoughQ2{newQty <= stock?}
+StockNotEnough2[/PRINT Insufficient stock/]
+UpdateCart[UPDATE_CART]
+UpdatedMsg[/PRINT Cart updated/]
+
+CartRemoveQ{cartAction is REMOVE?}
+ReadRemove[/READ removeID/]
+RemoveItem[REMOVE_FROM_CART]
+RemovedMsg[/PRINT Item removed/]
+CartInvalid[/PRINT Invalid cart command/]
+
+%% -------- CHECKOUT --------
+EmptyCartQ{CART_IS_EMPTY?}
+EmptyMsg[/PRINT Cart is empty/]
+
+SubtotalProc[cartSubtotal = CALCULATE_SUBTOTAL]
+PrintSubtotal[/PRINT Subtotal/]
+
+AskDiscount[/PRINT Apply discount YES or NO\nREAD applyDiscount/]
+DiscountQ{applyDiscount is YES?}
+ReadCode[/READ discountCode/]
+ValidCodeQ{VALIDATE_DISCOUNT_CODE?}
+CalcDiscount[discountAmount = CALCULATE_DISCOUNT]
+InvalidCode[/PRINT Invalid discount code\nSET discountAmount = 0/]
+NoDiscount[SET discountAmount = 0/]
+
+TotalAfter[totalAfterDiscount = cartSubtotal - discountAmount]
+PrintAfter[/PRINT Total after discount/]
+
+MinOrderQ{totalAfterDiscount >= 10?}
+MinFail[/PRINT Minimum order is 10\nAdd more items/]
+
+ShipFreeQ{totalAfterDiscount >= 40?}
+ShipFree[shippingFee = 0]
+ShipPaid[shippingFee = 5]
+PrintShip[/PRINT Shipping fee info/]
+
+FinalTotal[finalTotal = totalAfterDiscount + shippingFee]
+PrintFinal[/PRINT Final total/]
+
+PayRead[/PRINT Payment method\nCARD or CASH_ON_DELIVERY\nREAD paymentMethod/]
+PayCardQ{paymentMethod is CARD?}
+PayCODQ{paymentMethod is CASH_ON_DELIVERY?}
+PayInvalid[/PRINT Invalid payment method/]
+
+ReadCard[/READ card details/]
+PayOkQ{PROCESS_CARD_PAYMENT OK?}
+PayFail[/PRINT Payment failed/]
+PayOk[/PRINT Payment successful/]
+CODMsg[/PRINT Cash on delivery selected/]
+
+ConfirmRead[/PRINT Confirm order YES or NO\nREAD confirm/]
+ConfirmQ{confirm is YES?}
+CreateOrder[CREATE_ORDER\nCLEAR cartItems]
+ConfirmMsg[/PRINT Order confirmed/]
+CancelMsg[/PRINT Order cancelled/]
+
+%% -------- FLOW --------
+Start --> Welcome --> AskLogged --> NeedLogin
+NeedLogin -- Yes --> LoginOk
+NeedLogin -- No --> ReadCreds --> ValidLogin
+ValidLogin -- Yes --> LoginOk
+ValidLogin -- No --> LoginFail --> End
+
+LoginOk --> Init --> Menu
+
+Menu --> ExitQ
+ExitQ -- Yes --> Goodbye --> End
+ExitQ -- No --> BrowseQ
+
+BrowseQ -- Yes --> BrowseCategory
+BrowseQ -- No --> CartQ
+
+CartQ -- Yes --> ShowCart
+CartQ -- No --> CheckoutQ
+
+CheckoutQ -- Yes --> EmptyCartQ
+CheckoutQ -- No --> InvalidAction --> Menu
+
+%% Browse loop
+BrowseCategory --> CatBackQ
+CatBackQ -- Yes --> Menu
+CatBackQ -- No --> ShowProducts --> ReadProduct --> ProdBackQ
+ProdBackQ -- Yes --> BrowseCategory
+ProdBackQ -- No --> ReadQty --> QtyValidQ
+QtyValidQ -- No --> QtyInvalid --> ReadQty
+QtyValidQ -- Yes --> StockProc --> StockEnoughQ
+StockEnoughQ -- No --> StockNotEnough --> ReadQty
+StockEnoughQ -- Yes --> AddToCart --> AddedMsg --> BrowseCategory
+
+%% Cart loop
+ShowCart --> CartBackQ
+CartBackQ -- Yes --> Menu
+CartBackQ -- No --> CartClearQ
+CartClearQ -- Yes --> DoClear --> ClearedMsg --> ShowCart
+CartClearQ -- No --> CartEditQ
+
+CartEditQ -- Yes --> ReadEdit --> NewQtyValidQ
+NewQtyValidQ -- No --> NewQtyInvalid --> ShowCart
+NewQtyValidQ -- Yes --> StockProc2 --> StockEnoughQ2
+StockEnoughQ2 -- No --> StockNotEnough2 --> ShowCart
+StockEnoughQ2 -- Yes --> UpdateCart --> UpdatedMsg --> ShowCart
+
+CartEditQ -- No --> CartRemoveQ
+CartRemoveQ -- Yes --> ReadRemove --> RemoveItem --> RemovedMsg --> ShowCart
+CartRemoveQ -- No --> CartInvalid --> ShowCart
+
+%% Checkout flow
+EmptyCartQ -- Yes --> EmptyMsg --> Menu
+EmptyCartQ -- No --> SubtotalProc --> PrintSubtotal --> AskDiscount --> DiscountQ
+DiscountQ -- Yes --> ReadCode --> ValidCodeQ
+ValidCodeQ -- Yes --> CalcDiscount --> TotalAfter
+ValidCodeQ -- No --> InvalidCode --> TotalAfter
+DiscountQ -- No --> NoDiscount --> TotalAfter
+
+TotalAfter --> PrintAfter --> MinOrderQ
+MinOrderQ -- No --> MinFail --> Menu
+MinOrderQ -- Yes --> ShipFreeQ
+ShipFreeQ -- Yes --> ShipFree --> PrintShip
+ShipFreeQ -- No --> ShipPaid --> PrintShip
+
+PrintShip --> FinalTotal --> PrintFinal --> PayRead --> PayCardQ
+PayCardQ -- Yes --> ReadCard --> PayOkQ
+PayOkQ -- Yes --> PayOk --> ConfirmRead
+PayOkQ -- No --> PayFail --> Menu
+
+PayCardQ -- No --> PayCODQ
+PayCODQ -- Yes --> CODMsg --> ConfirmRead
+PayCODQ -- No --> PayInvalid --> Menu
+
+ConfirmRead --> ConfirmQ
+ConfirmQ -- Yes --> CreateOrder --> ConfirmMsg --> Menu
+ConfirmQ -- No --> CancelMsg --> Menu
